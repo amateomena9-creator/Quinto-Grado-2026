@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>El Reino de las Fracciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --purple:#6C5CE7;
+    --purple-dark:#5a49d6;
+    --teal:#00CEC9;
+    --teal-dark:#00a39e;
+    --coral:#FF7675;
+    --coral-dark:#e85f5e;
+    --gold:#FDCB6E;
+    --gold-dark:#f0b642;
+    --violet:#a29bfe;
+    --ink:#2d3436;
+    --ink-soft:#636e72;
+    --success:#00b894;
+    --danger:#e17055;
+    --bg1:#eef2ff;
+    --bg2:#e3fbfb;
+    --card-bg:#ffffff;
+    --radius-lg:26px;
+    --radius-md:18px;
+    --radius-sm:12px;
+    --shadow-soft:0 10px 26px rgba(108,92,231,.14);
+    --shadow-pop:0 16px 34px rgba(108,92,231,.28);
+    --pie-color:#6C5CE7;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:'Nunito', 'Trebuchet MS', sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 12% 18%, rgba(253,203,110,.28), transparent 40%),
+      radial-gradient(circle at 88% 12%, rgba(0,206,201,.25), transparent 42%),
+      radial-gradient(circle at 50% 100%, rgba(108,92,231,.18), transparent 55%),
+      linear-gradient(160deg, var(--bg1), var(--bg2));
+    overflow-x:hidden;
+  }
+  h1,h2,h3{font-family:'Baloo 2', 'Trebuchet MS', sans-serif; margin:0;}
+  button{font-family:inherit; cursor:pointer;}
+  #app{max-width:1180px; margin:0 auto; padding:0 18px 40px; min-height:100vh; display:flex; flex-direction:column;}
+
+  /* ---------- TOPBAR ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 6px; gap:12px; flex-wrap:wrap;
+  }
+  .brand{display:flex; align-items:center; gap:10px; font-family:'Baloo 2'; font-weight:800; font-size:1.35rem; color:var(--purple-dark);}
+  .brand .fox{font-size:2rem; filter:drop-shadow(0 4px 6px rgba(108,92,231,.35)); animation: bob 3s ease-in-out infinite;}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-3deg);} 50%{transform:translateY(-6px) rotate(3deg);}}
+  .topbar-right{display:flex; align-items:center; gap:10px;}
+  .stars-total{
+    display:flex; align-items:center; gap:6px; background:var(--card-bg); padding:8px 16px; border-radius:100px;
+    box-shadow:var(--shadow-soft); font-weight:800; color:var(--gold-dark); font-family:'Baloo 2'; font-size:1.05rem;
+  }
+  .icon-btn{
+    width:44px; height:44px; border-radius:50%; border:none; background:var(--card-bg); box-shadow:var(--shadow-soft);
+    font-size:1.3rem; display:flex; align-items:center; justify-content:center; transition:transform .15s ease;
+  }
+  .icon-btn:hover{transform:translateY(-2px) scale(1.05);}
+  .icon-btn:active{transform:scale(.94);}
+
+  /* ---------- SCREENS ---------- */
+  .screen{display:none; animation:fadeUp .35s ease;}
+  .screen.active{display:block;}
+  @keyframes fadeUp{from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);}}
+
+  /* ---------- MENU ---------- */
+  .menu-hero{
+    text-align:center; padding:18px 12px 30px;
+  }
+  .menu-hero h1{font-size:clamp(1.7rem, 4vw, 2.6rem); color:var(--purple-dark);}
+  .menu-hero p{color:var(--ink-soft); font-size:1.05rem; max-width:560px; margin:10px auto 0;}
+  .levels-grid{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:20px; padding:6px;
+  }
+  .level-card{
+    position:relative; background:var(--card-bg); border-radius:var(--radius-lg); padding:22px 18px 20px;
+    box-shadow:var(--shadow-soft); text-align:center; border:3px solid transparent; transition:transform .2s ease, box-shadow .2s ease;
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+  }
+  .level-card:not(.locked):hover{transform:translateY(-6px); box-shadow:var(--shadow-pop); border-color:var(--card-color, var(--purple));}
+  .level-card .badge{
+    width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:1.8rem; background:var(--card-color, var(--purple)); color:white; box-shadow:0 8px 18px rgba(0,0,0,.12);
+  }
+  .level-card h3{font-size:1.15rem; color:var(--ink);}
+  .level-card .desc{font-size:.85rem; color:var(--ink-soft); min-height:32px;}
+  .level-card .stars{font-size:1.15rem; letter-spacing:2px;}
+  .level-card .stars .dim{opacity:.25;}
+  .level-card button{
+    margin-top:6px; border:none; padding:10px 22px; border-radius:100px; font-weight:800; color:white;
+    background:var(--card-color, var(--purple)); box-shadow:0 8px 18px rgba(0,0,0,.14); font-size:.95rem;
+  }
+  .level-card.locked{opacity:.6;}
+  .level-card.locked .badge{background:#b2bec3;}
+  .level-card.locked button{background:#b2bec3; cursor:not-allowed;}
+  .lock-tag{position:absolute; top:12px; right:12px; font-size:1.1rem;}
+
+  /* ---------- GAME SCREEN ---------- */
+  .game-header{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; padding:10px 4px;}
+  .game-header h2{color:var(--card-color, var(--purple)); font-size:clamp(1.2rem,3vw,1.6rem);}
+  .round-info{
+    background:var(--card-bg); padding:6px 16px; border-radius:100px; box-shadow:var(--shadow-soft); font-weight:800;
+    color:var(--ink-soft); font-size:.95rem;
+  }
+  .instruction-banner{
+    background:var(--card-bg); border-radius:var(--radius-md); padding:14px 18px; box-shadow:var(--shadow-soft);
+    margin:8px 4px 18px; font-size:.98rem; color:var(--ink-soft); border-left:8px solid var(--card-color, var(--purple));
+  }
+  .instruction-banner b{color:var(--ink);}
+  .game-area{padding:6px 4px 10px; min-height:280px;}
+  .game-footer{display:flex; justify-content:center; gap:14px; padding:16px 4px 8px; flex-wrap:wrap;}
+  .btn{
+    border:none; padding:13px 30px; border-radius:100px; font-weight:800; font-size:1rem; color:white;
+    box-shadow:0 10px 20px rgba(0,0,0,.15); transition:transform .15s ease;
+  }
+  .btn:hover{transform:translateY(-2px);}
+  .btn:active{transform:scale(.96);}
+  .btn.primary{background:linear-gradient(135deg, var(--purple), var(--purple-dark));}
+  .btn.secondary{background:linear-gradient(135deg, var(--teal), var(--teal-dark));}
+  .btn.ghost{background:var(--card-bg); color:var(--ink); box-shadow:var(--shadow-soft);}
+  .btn:disabled{opacity:.5; cursor:not-allowed; transform:none;}
+
+  /* ---------- FRACTION VISUALS ---------- */
+  .fraction-visual{display:flex; flex-direction:column; align-items:center; font-family:'Baloo 2'; font-weight:700; font-size:1.7rem; line-height:1.05; color:var(--ink);}
+  .frac-bar{width:38px; height:4px; background:var(--ink); border-radius:3px; margin:3px 0;}
+  .pie-row{display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin-top:8px;}
+  .pie{width:48px; height:48px; border-radius:50%; background:#e7e7f3; box-shadow:inset 0 0 0 3px rgba(0,0,0,.06);}
+  .pie.full{background:var(--pie-color);}
+
+  /* ---------- SELECT GRID (levels 1-3) ---------- */
+  .cards-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(130px,1fr)); gap:16px;}
+  .frac-card{
+    background:var(--card-bg); border-radius:var(--radius-md); padding:16px 10px; box-shadow:var(--shadow-soft);
+    border:3px solid transparent; display:flex; flex-direction:column; align-items:center; gap:4px;
+    transition:all .18s ease; user-select:none;
+  }
+  .frac-card.selectable{cursor:pointer;}
+  .frac-card.selectable:hover{transform:translateY(-4px);}
+  .frac-card.selected{border-color:var(--purple); background:#f4f2ff; transform:translateY(-4px) scale(1.03);}
+  .frac-card.correct{border-color:var(--success); background:#e8fbf3;}
+  .frac-card.incorrect{border-color:var(--danger); background:#fff1ee;}
+  .frac-card.missed{box-shadow:0 0 0 3px var(--gold) inset;}
+  .frac-card .tag{font-size:.7rem; font-weight:800; margin-top:2px; padding:2px 10px; border-radius:100px;}
+  .tag.ok{background:#d4f7ea; color:var(--success);}
+  .tag.bad{background:#ffe4de; color:var(--danger);}
+
+  /* ---------- MEMORY GAME (level 4) ---------- */
+  .memory-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(120px,1fr)); gap:14px;}
+  .mem-card{
+    background:linear-gradient(135deg, var(--coral), #ff9f9e); border-radius:var(--radius-md); aspect-ratio:1/1;
+    display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-soft); cursor:pointer;
+    font-size:1.8rem; color:white; transition:transform .25s ease; perspective:600px;
+  }
+  .mem-card .face{display:none; flex-direction:column; align-items:center;}
+  .mem-card.flipped{background:var(--card-bg); transform:scale(1.02);}
+  .mem-card.flipped .back{display:none;}
+  .mem-card.flipped .face{display:flex;}
+  .mem-card .back{font-size:2rem;}
+  .mem-card.matched{background:#e8fbf3; box-shadow:0 0 0 3px var(--success) inset; cursor:default;}
+  .mem-card.matched .face{display:flex; color:var(--ink);}
+  .mem-card.flipped .face{color:var(--ink);}
+  .mem-card.shake{animation:shake .4s ease;}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+
+  /* ---------- CLASSIFY / DRAG-DROP (level 5) ---------- */
+  .classify-wrap{display:flex; flex-direction:column; gap:22px;}
+  .tray{
+    display:flex; flex-wrap:wrap; gap:14px; justify-content:center; background:rgba(255,255,255,.55);
+    border-radius:var(--radius-md); padding:18px; min-height:120px; box-shadow:inset 0 0 0 2px rgba(108,92,231,.12);
+  }
+  .chip{
+    background:var(--card-bg); border-radius:16px; padding:10px 8px; box-shadow:var(--shadow-soft);
+    display:flex; flex-direction:column; align-items:center; touch-action:none; cursor:grab;
+    border:3px solid transparent; min-width:80px;
+  }
+  .chip:active{cursor:grabbing;}
+  .chip .fraction-visual{font-size:1.3rem;}
+  .chip .frac-bar{width:26px;}
+  .boxes-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:16px;}
+  .drop-box{
+    background:var(--card-bg); border-radius:var(--radius-md); padding:14px; min-height:130px; box-shadow:var(--shadow-soft);
+    border:3px dashed var(--box-color, var(--purple)); display:flex; flex-direction:column; gap:8px;
+  }
+  .drop-box h4{font-family:'Baloo 2'; color:var(--box-color, var(--purple)); font-size:1rem; text-align:center;}
+  .box-items{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; min-height:50px;}
+  .drop-box.hover{background:#f4f2ff;}
+  .chip.placed-mini{transform:scale(.8); box-shadow:none; cursor:default; border-color:var(--success);}
+
+  /* ---------- TOAST + MASCOT ---------- */
+  #toast{
+    position:fixed; left:50%; bottom:26px; transform:translate(-50%, 140%); background:var(--ink); color:white;
+    padding:14px 26px; border-radius:100px; font-weight:800; box-shadow:0 14px 30px rgba(0,0,0,.28); z-index:2000;
+    transition:transform .3s ease; max-width:90vw; text-align:center; font-size:.95rem;
+  }
+  #toast.show{transform:translate(-50%, 0);}
+  #toast.success{background:var(--success);}
+  #toast.error{background:var(--danger);}
+  #mascot{
+    position:fixed; right:18px; bottom:18px; font-size:2.6rem; z-index:1500; filter:drop-shadow(0 8px 12px rgba(0,0,0,.2));
+    transition:transform .25s ease;
+  }
+  #mascot.happy{animation:pop .5s ease;}
+  #mascot.sad{animation:wob .5s ease;}
+  @keyframes pop{0%{transform:scale(1);}40%{transform:scale(1.35) rotate(8deg);}100%{transform:scale(1);}}
+  @keyframes wob{0%,100%{transform:rotate(0);}25%{transform:rotate(-12deg);}75%{transform:rotate(12deg);}}
+
+  /* ---------- MODAL ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(45,52,54,.55); display:flex; align-items:center; justify-content:center;
+    z-index:3000; padding:20px;
+  }
+  .modal-overlay.hidden{display:none;}
+  .modal-box{
+    background:var(--card-bg); border-radius:var(--radius-lg); padding:28px 26px; max-width:460px; width:100%;
+    text-align:center; box-shadow:0 30px 60px rgba(0,0,0,.3); animation:fadeUp .3s ease;
+  }
+  .modal-box h2{color:var(--card-color, var(--purple)); margin-bottom:10px; font-size:1.4rem;}
+  .modal-box p{color:var(--ink-soft); font-size:1rem; line-height:1.5;}
+  .modal-example{margin:16px auto; display:flex; justify-content:center;}
+
+  /* ---------- SUMMARY ---------- */
+  .summary-box{
+    max-width:520px; margin:20px auto; background:var(--card-bg); border-radius:var(--radius-lg); padding:34px 26px;
+    text-align:center; box-shadow:var(--shadow-pop);
+  }
+  .summary-box .big-stars{font-size:2.6rem; letter-spacing:8px; margin:14px 0;}
+  .summary-box h2{color:var(--purple-dark); font-size:1.6rem; margin-bottom:6px;}
+  .summary-actions{display:flex; gap:12px; justify-content:center; margin-top:18px; flex-wrap:wrap;}
+
+  .confetti{position:fixed; top:-20px; width:10px; height:16px; border-radius:3px; z-index:2500; animation:fall linear forwards;}
+  @keyframes fall{to{transform:translateY(110vh) rotate(540deg); opacity:.9;}}
+
+  @media (max-width:600px){
+    .brand span{display:none;}
+    .game-header{flex-direction:column; align-items:flex-start;}
+    .cards-grid{grid-template-columns:repeat(auto-fit, minmax(105px,1fr));}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header class="topbar">
+    <div class="brand"><span class="fox">🦊</span><span>El Reino de las Fracciones</span></div>
+    <div class="topbar-right">
+      <div class="stars-total">⭐ <span id="totalStars">0</span> / 15</div>
+      <button class="icon-btn" id="homeBtn" title="Menú principal">🏠</button>
+    </div>
+  </header>
+
+  <main id="screens">
+
+    <!-- MENU -->
+    <section class="screen active" id="screen-menu">
+      <div class="menu-hero">
+        <h1>¡Bienvenido explorador! 🗺️</h1>
+        <p>Fracto el zorro necesita tu ayuda para dominar las fracciones. Superá los 5 niveles jugando, sin apuros, ¡divirtiéndote de a un paso a la vez!</p>
+      </div>
+      <div class="levels-grid" id="levelsGrid"></div>
+    </section>
+
+    <!-- GAME -->
+    <section class="screen" id="screen-game">
+      <div class="game-header">
+        <h2 id="gameTitle">Nivel</h2>
+        <div class="round-info" id="roundIndicator">Ronda 1/5</div>
+      </div>
+      <div class="instruction-banner" id="instructionBanner"></div>
+      <div class="game-area" id="gameArea"></div>
+      <div class="game-footer">
+        <button class="btn primary" id="checkBtn">Comprobar ✅</button>
+        <button class="btn secondary" id="nextBtn" style="display:none;">Siguiente ▶</button>
+        <button class="btn ghost" id="restartTrayBtn" style="display:none;">Reordenar bandeja 🔄</button>
+      </div>
+    </section>
+
+    <!-- SUMMARY -->
+    <section class="screen" id="screen-summary">
+      <div class="summary-box">
+        <h2 id="summaryTitle">¡Nivel completado!</h2>
+        <div class="big-stars" id="summaryStars">⭐⭐⭐</div>
+        <p id="summaryMsg">¡Excelente trabajo!</p>
+        <div class="summary-actions">
+          <button class="btn ghost" id="backToMenuBtn">Menú principal</button>
+          <button class="btn primary" id="nextLevelBtn">Siguiente nivel ▶</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div id="mascot">🦊</div>
+<div id="toast"></div>
+
+<div class="modal-overlay hidden" id="modalOverlay">
+  <div class="modal-box" id="modalBox">
+    <h2 id="modalTitle">Nivel</h2>
+    <p id="modalText"></p>
+    <div class="modal-example" id="modalExample"></div>
+    <button class="btn primary" id="modalStartBtn">¡A jugar! 🚀</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ================= DATA / STATE ================= */
+  const LEVELS = [
+    { key:'propias', title:'Nivel 1: Fracciones Propias', short:'Propias', color:'var(--purple)', colorHex:'#6C5CE7',
+      icon:'🍕', target:'propia',
+      theory:'Una fracción <b>PROPIA</b> es menor que un entero: el numerador es menor que el denominador. Ejemplo: 3/4.',
+      desc:'Encontrá las fracciones menores que 1 entero.' },
+    { key:'impropias', title:'Nivel 2: Fracciones Impropias', short:'Impropias', color:'var(--teal)', colorHex:'#00CEC9',
+      icon:'🎈', target:'impropia',
+      theory:'Una fracción <b>IMPROPIA</b> es mayor que un entero: el numerador es mayor que el denominador. Ejemplo: 5/4.',
+      desc:'Encontrá las fracciones mayores que 1 entero.' },
+    { key:'aparentes', title:'Nivel 3: Fracciones Aparentes', short:'Aparentes', color:'var(--gold)', colorHex:'#FDCB6E',
+      icon:'🔢', target:'aparente',
+      theory:'Una fracción <b>APARENTE</b> equivale a un número entero exacto: el numerador es divisible por el denominador. Ejemplo: 4/2 = 2.',
+      desc:'Encontrá las fracciones que valen un entero exacto.' },
+    { key:'equivalentes', title:'Nivel 4: Fracciones Equivalentes', short:'Equivalentes', color:'var(--coral)', colorHex:'#FF7675',
+      icon:'🧩', target:null,
+      theory:'Dos fracciones son <b>EQUIVALENTES</b> cuando tienen distinto numerador y denominador, pero representan la misma cantidad. Ejemplo: 1/2 = 2/4.',
+      desc:'Encontrá las parejas que valen lo mismo.' },
+    { key:'desafio', title:'Nivel 5: El Desafío Final', short:'Desafío Final', color:'var(--violet)', colorHex:'#a29bfe',
+      icon:'🏆', target:null,
+      theory:'¡Combinemos todo! Arrastrá cada fracción a la caja correcta: Propias, Impropias, Aparentes o Equivalentes a 1/2.',
+      desc:'Clasificá los 4 tipos de fracciones mezclados.' },
+  ];
+
+  const state = {
+    progress:[0,0,0,0,0], // stars per level
+    currentLevel:0,
+    level:{}, // scratch data for the level in progress
+  };
+
+  /* ================= HELPERS ================= */
+  function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+  function fracKey(f){ return f.num+'/'+f.den; }
+  function fractionType(num,den){
+    if(num % den === 0) return 'aparente';
+    if(num < den) return 'propia';
+    return 'impropia';
+  }
+  function isEquivalent(a,b){ return a.num*b.den === b.num*a.den; }
+
+  function makeProper(){
+    const den = randInt(2,9);
+    const num = randInt(1,den-1);
+    return {num,den};
+  }
+  function makeImproper(){
+    const den = randInt(2,7);
+    let num;
+    do{ num = randInt(den+1, den*2+3); } while(num % den === 0);
+    return {num,den};
+  }
+  function makeApparente(){
+    const den = randInt(2,6);
+    const whole = randInt(2,4);
+    return {num:den*whole, den};
+  }
+  function makeFractionOfType(type){
+    if(type==='propia') return makeProper();
+    if(type==='impropia') return makeImproper();
+    return makeApparente();
+  }
+  function makeEquivalentOf(base, multiplier){
+    return {num:base.num*multiplier, den:base.den*multiplier};
+  }
+
+  /* ================= VISUAL RENDER ================= */
+  function pieRowHTML(num, den){
+    const whole = Math.floor(num/den);
+    const rem = num % den;
+    let html = '';
+    for(let i=0;i<whole;i++){ html += `<div class="pie full"></div>`; }
+    if(rem>0){
+      const deg = Math.round(360*rem/den);
+      html += `<div class="pie" style="background:conic-gradient(var(--pie-color) ${deg}deg, #e7e7f3 ${deg}deg 360deg)"></div>`;
+    }
+    return `<div class="pie-row">${html}</div>`;
+  }
+  function fractionVisualHTML(num,den, withPie=true){
+    return `<div class="fraction-visual"><div>${num}</div><div class="frac-bar"></div><div>${den}</div></div>${withPie? pieRowHTML(num,den):''}`;
+  }
+
+  /* ================= TOAST / MASCOT ================= */
+  let toastTimer=null;
+  function showToast(msg, type){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'show ' + (type||'');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=>{ t.className=''; }, 2000);
+  }
+  function reactMascot(mood){
+    const m = document.getElementById('mascot');
+    m.textContent = mood==='happy' ? '🥳' : mood==='sad' ? '😅' : '🦊';
+    m.className = mood;
+    setTimeout(()=>{ m.className=''; m.textContent='🦊'; }, 700);
+  }
+
+  /* ================= SCREEN NAV ================= */
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  /* ================= MENU RENDER ================= */
+  function renderMenu(){
+    const grid = document.getElementById('levelsGrid');
+    grid.innerHTML = '';
+    let totalStars = 0;
+    state.progress.forEach(s=>totalStars+=s);
+    document.getElementById('totalStars').textContent = totalStars;
+
+    LEVELS.forEach((lvl, i)=>{
+      const unlocked = i===0 || state.progress[i-1] > 0;
+      const stars = state.progress[i];
+      const starsHTML = [0,1,2].map(k => `<span class="${k<stars?'':'dim'}">⭐</span>`).join('');
+      const card = document.createElement('div');
+      card.className = 'level-card' + (unlocked? '' : ' locked');
+      card.style.setProperty('--card-color', lvl.colorHex);
+      card.innerHTML = `
+        ${unlocked? '' : '<div class="lock-tag">🔒</div>'}
+        <div class="badge">${lvl.icon}</div>
+        <h3>${lvl.short}</h3>
+        <div class="desc">${lvl.desc}</div>
+        <div class="stars">${starsHTML}</div>
+        <button ${unlocked? '' : 'disabled'}>${stars>0 ? 'Jugar de nuevo' : 'Jugar'}</button>
+      `;
+      const btn = card.querySelector('button');
+      btn.addEventListener('click', ()=>{
+        if(!unlocked){ showToast('Primero completá el nivel anterior 🙂', 'error'); return; }
+        openLevelIntro(i);
+      });
+      grid.appendChild(card);
+    });
+  }
+
+  /* ================= LEVEL INTRO MODAL ================= */
+  function openLevelIntro(index){
+    state.currentLevel = index;
+    const lvl = LEVELS[index];
+    document.getElementById('modalTitle').textContent = lvl.title;
+    document.getElementById('modalTitle').style.color = lvl.colorHex;
+    document.getElementById('modalText').innerHTML = lvl.theory;
+    document.documentElement.style.setProperty('--pie-color', lvl.colorHex);
+
+    let exampleHTML = '';
+    if(lvl.key==='propias') exampleHTML = fractionVisualHTML(3,4);
+    else if(lvl.key==='impropias') exampleHTML = fractionVisualHTML(5,4);
+    else if(lvl.key==='aparentes') exampleHTML = fractionVisualHTML(4,2);
+    else if(lvl.key==='equivalentes') exampleHTML = fractionVisualHTML(1,2,false)+'<div style="width:20px;text-align:center;font-family:Baloo 2;font-weight:800;font-size:1.5rem;">=</div>'+fractionVisualHTML(2,4,false);
+    else exampleHTML = `<div style="display:flex;gap:14px;align-items:center;">${fractionVisualHTML(3,4,false)}${fractionVisualHTML(5,4,false)}${fractionVisualHTML(4,2,false)}${fractionVisualHTML(2,4,false)}</div>`;
+    document.getElementById('modalExample').innerHTML = `<div style="display:flex;gap:10px;">${exampleHTML}</div>`;
+
+    document.getElementById('modalOverlay').classList.remove('hidden');
+  }
+  document.getElementById('modalStartBtn').addEventListener('click', ()=>{
+    document.getElementById('modalOverlay').classList.add('hidden');
+    startLevel(state.currentLevel);
+  });
+
+  /* ================= LEVEL DISPATCH ================= */
+  function startLevel(index){
+    const lvl = LEVELS[index];
+    document.getElementById('gameTitle').textContent = lvl.title;
+    document.getElementById('gameTitle').style.color = lvl.colorHex;
+    document.getElementById('instructionBanner').innerHTML = lvl.theory;
+    document.getElementById('instructionBanner').style.borderLeftColor = lvl.colorHex;
+    document.documentElement.style.setProperty('--pie-color', lvl.colorHex);
+    document.getElementById('checkBtn').style.display = 'none';
+    document.getElementById('nextBtn').style.display = 'none';
+    document.getElementById('restartTrayBtn').style.display = 'none';
+    showScreen('screen-game');
+
+    if(index <= 2) startSelectGame(index);
+    else if(index === 3) startMemoryGame(index);
+    else startClassifyGame(index);
+  }
+
+  /* ================= LEVELS 1-3: SELECT GAME ================= */
+  function startSelectGame(index){
+    const lvl = LEVELS[index];
+    state.level = { index, round:0, totalRounds:5, correct:0, possible:0, checked:false, cards:[] };
+    document.getElementById('checkBtn').style.display = 'inline-block';
+    document.getElementById('checkBtn').disabled = false;
+    document.getElementById('checkBtn').onclick = checkSelectRound;
+    document.getElementById('nextBtn').onclick = nextSelectRound;
+    loadSelectRound();
+  }
+
+  function loadSelectRound(){
+    const s = state.level;
+    const lvl = LEVELS[s.index];
+    s.round++;
+    s.checked = false;
+    document.getElementById('roundIndicator').textContent = `Ronda ${s.round}/${s.totalRounds}`;
+    document.getElementById('checkBtn').style.display='inline-block';
+    document.getElementById('checkBtn').disabled = false;
+    document.getElementById('nextBtn').style.display='none';
+
+    const howManyTarget = randInt(2,4);
+    const otherTypes = ['propia','impropia','aparente'].filter(t=>t!==lvl.target);
+    const seen = new Set();
+    const cards = [];
+
+    function pushUnique(f, type){
+      const k = fracKey(f);
+      if(seen.has(k)) return false;
+      seen.add(k); cards.push({...f, type}); return true;
+    }
+    let guard=0;
+    while(cards.filter(c=>c.type===lvl.target).length < howManyTarget && guard<200){
+      guard++;
+      const f = makeFractionOfType(lvl.target);
+      pushUnique(f, lvl.target);
+    }
+    guard=0;
+    while(cards.length < 6 && guard<300){
+      guard++;
+      const t = otherTypes[randInt(0,otherTypes.length-1)];
+      const f = makeFractionOfType(t);
+      pushUnique(f, t);
+    }
+    // shuffle
+    for(let i=cards.length-1;i>0;i--){ const j=randInt(0,i); [cards[i],cards[j]]=[cards[j],cards[i]]; }
+    s.cards = cards;
+
+    const grid = document.createElement('div');
+    grid.className = 'cards-grid';
+    grid.innerHTML = cards.map((c,i)=>`
+      <div class="frac-card selectable" data-i="${i}">
+        ${fractionVisualHTML(c.num, c.den)}
+      </div>
+    `).join('');
+    const area = document.getElementById('gameArea');
+    area.innerHTML='';
+    area.appendChild(grid);
+
+    grid.querySelectorAll('.frac-card').forEach(card=>{
+      card.addEventListener('click', ()=>{
+        if(s.checked) return;
+        card.classList.toggle('selected');
+      });
+    });
+  }
+
+  function checkSelectRound(){
+    const s = state.level;
+    if(s.checked) return;
+    s.checked = true;
+    const lvl = LEVELS[s.index];
+    const cards = document.querySelectorAll('#gameArea .frac-card');
+    let roundCorrect = 0;
+    cards.forEach((cardEl,i)=>{
+      const data = s.cards[i];
+      const isTarget = data.type === lvl.target;
+      const wasSelected = cardEl.classList.contains('selected');
+      const good = (isTarget && wasSelected) || (!isTarget && !wasSelected);
+      if(good){ roundCorrect++; }
+      if(wasSelected && !isTarget){ cardEl.classList.add('incorrect'); }
+      else if(wasSelected && isTarget){ cardEl.classList.add('correct'); }
+      else if(!wasSelected && isTarget){ cardEl.classList.add('missed'); }
+    });
+    s.correct += roundCorrect;
+    s.possible += cards.length;
+
+    document.getElementById('checkBtn').style.display='none';
+    document.getElementById('nextBtn').style.display='inline-block';
+    document.getElementById('nextBtn').textContent = s.round < s.totalRounds ? 'Siguiente ronda ▶' : 'Ver resultado 🏁';
+
+    const pct = roundCorrect/cards.length;
+    if(pct >= 0.8){ showToast('¡Excelente! 🎉', 'success'); reactMascot('happy'); }
+    else if(pct >= 0.5){ showToast('¡Bien! Seguimos aprendiendo 💪', 'success'); reactMascot('happy'); }
+    else { showToast('Repasemos la regla y seguimos 🙂', 'error'); reactMascot('sad'); }
+  }
+
+  function nextSelectRound(){
+    const s = state.level;
+    if(s.round < s.totalRounds){ loadSelectRound(); }
+    else {
+      const pct = s.correct / s.possible;
+      const stars = pct>=0.85 ? 3 : pct>=0.6 ? 2 : 1;
+      finishLevel(s.index, stars, Math.round(pct*100));
+    }
+  }
+
+  /* ================= LEVEL 4: MEMORY MATCH ================= */
+  function startMemoryGame(index){
+    const bases = [ {num:1,den:2}, {num:1,den:3}, {num:2,den:3}, {num:1,den:4}, {num:3,den:4}, {num:2,den:5} ];
+    const pairId = [];
+    const cards = [];
+    bases.forEach((base, bi)=>{
+      const mults = [1,2,3,4,5].sort(()=>Math.random()-0.5).slice(0,2);
+      const fA = makeEquivalentOf(base, mults[0]);
+      const fB = makeEquivalentOf(base, mults[1]);
+      cards.push({ ...fA, pair:bi });
+      cards.push({ ...fB, pair:bi });
+    });
+    for(let i=cards.length-1;i>0;i--){ const j=randInt(0,i); [cards[i],cards[j]]=[cards[j],cards[i]]; }
+
+    state.level = { index, cards, matched:0, totalPairs:bases.length, attempts:0, first:null, lock:false };
+
+    document.getElementById('roundIndicator').textContent = `Parejas: 0/${bases.length}`;
+    const grid = document.createElement('div');
+    grid.className = 'memory-grid';
+    grid.innerHTML = cards.map((c,i)=>`
+      <div class="mem-card" data-i="${i}">
+        <div class="back">❓</div>
+        <div class="face">${fractionVisualHTML(c.num,c.den,false)}</div>
+      </div>
+    `).join('');
+    const area = document.getElementById('gameArea');
+    area.innerHTML=''; area.appendChild(grid);
+
+    grid.querySelectorAll('.mem-card').forEach(card=>{
+      card.addEventListener('click', ()=> onMemoryCardClick(card));
+    });
+  }
+
+  function onMemoryCardClick(card){
+    const s = state.level;
+    if(s.lock) return;
+    if(card.classList.contains('flipped') || card.classList.contains('matched')) return;
+    card.classList.add('flipped');
+    const i = parseInt(card.dataset.i,10);
+    const data = s.cards[i];
+
+    if(!s.first){
+      s.first = {card, data};
+      return;
+    }
+    s.attempts++;
+    const a = s.first;
+    const isMatch = isEquivalent({num:a.data.num,den:a.data.den}, {num:data.num,den:data.den}) && a.card!==card;
+
+    if(isMatch){
+      s.lock = true;
+      setTimeout(()=>{
+        a.card.classList.add('matched');
+        card.classList.add('matched');
+        s.matched++;
+        s.first=null; s.lock=false;
+        document.getElementById('roundIndicator').textContent = `Parejas: ${s.matched}/${s.totalPairs}`;
+        showToast('¡Pareja equivalente! 🎉','success');
+        reactMascot('happy');
+        if(s.matched === s.totalPairs){
+          const stars = s.attempts<=8 ? 3 : s.attempts<=12 ? 2 : 1;
+          setTimeout(()=>finishLevel(s.index, stars, s.attempts), 500);
+        }
+      }, 350);
+    } else {
+      s.lock = true;
+      card.classList.add('shake');
+      a.card.classList.add('shake');
+      showToast('No son equivalentes, ¡probá de nuevo!','error');
+      reactMascot('sad');
+      setTimeout(()=>{
+        card.classList.remove('flipped','shake');
+        a.card.classList.remove('flipped','shake');
+        s.first=null; s.lock=false;
+      }, 850);
+    }
+  }
+
+  /* ================= LEVEL 5: CLASSIFY DRAG & DROP ================= */
+  const CATEGORIES = [
+    {key:'propia', label:'Propias', color:'#6C5CE7'},
+    {key:'impropia', label:'Impropias', color:'#00CEC9'},
+    {key:'aparente', label:'Aparentes', color:'#FDCB6E'},
+    {key:'equivalente', label:'Equivalentes a 1/2', color:'#FF7675'},
+  ];
+
+  function buildClassifySet(){
+    const items = [];
+    const seen = new Set();
+    function add(f, type){
+      const k = fracKey(f);
+      if(seen.has(k)) return false;
+      seen.add(k); items.push({...f, type}); return true;
+    }
+    let guard=0;
+    while(items.filter(i=>i.type==='propia').length<3 && guard<100){ guard++; const f=makeProper(); if(!isEquivalent(f,{num:1,den:2})) add(f,'propia'); }
+    guard=0;
+    while(items.filter(i=>i.type==='impropia').length<3 && guard<100){ guard++; add(makeImproper(),'impropia'); }
+    guard=0;
+    while(items.filter(i=>i.type==='aparente').length<3 && guard<100){ guard++; add(makeApparente(),'aparente'); }
+    guard=0;
+    const usedMults = new Set();
+    while(items.filter(i=>i.type==='equivalente').length<3 && guard<100){
+      guard++;
+      const m = randInt(2,7);
+      if(usedMults.has(m)) continue;
+      usedMults.add(m);
+      add({num:1*m, den:2*m}, 'equivalente');
+    }
+    for(let i=items.length-1;i>0;i--){ const j=randInt(0,i); [items[i],items[j]]=[items[j],items[i]]; }
+    return items;
+  }
+
+  function startClassifyGame(index){
+    const items = buildClassifySet();
+    state.level = { index, items, placed:0, total:items.length, mistakes:0 };
+    document.getElementById('roundIndicator').textContent = `Clasificadas: 0/${items.length}`;
+    document.getElementById('restartTrayBtn').style.display='inline-block';
+    document.getElementById('restartTrayBtn').onclick = ()=> renderClassifyArea();
+    renderClassifyArea();
+  }
+
+  function renderClassifyArea(){
+    const s = state.level;
+    const area = document.getElementById('gameArea');
+    area.innerHTML = `
+      <div class="classify-wrap">
+        <div class="tray" id="tray"></div>
+        <div class="boxes-grid" id="boxesGrid"></div>
+      </div>
+    `;
+    const tray = document.getElementById('tray');
+    const boxesGrid = document.getElementById('boxesGrid');
+
+    boxesGrid.innerHTML = CATEGORIES.map(c=>`
+      <div class="drop-box" data-category="${c.key}" style="--box-color:${c.color}">
+        <h4>${c.label}</h4>
+        <div class="box-items" id="box-${c.key}"></div>
+      </div>
+    `).join('');
+
+    tray.innerHTML = '';
+    s.items.forEach((it,i)=>{
+      if(it.placedOk) return;
+      const chip = document.createElement('div');
+      chip.className = 'chip';
+      chip.dataset.type = it.type;
+      chip.dataset.idx = i;
+      chip.innerHTML = fractionVisualHTML(it.num, it.den, false);
+      tray.appendChild(chip);
+      attachDrag(chip);
+    });
+
+    // re-place already-correct chips visually
+    s.items.forEach((it,i)=>{
+      if(it.placedOk){
+        const box = document.getElementById('box-'+it.type);
+        const mini = document.createElement('div');
+        mini.className = 'chip placed-mini';
+        mini.innerHTML = fractionVisualHTML(it.num, it.den, false);
+        box.appendChild(mini);
+      }
+    });
+  }
+
+  function attachDrag(chip){
+    let offsetX=0, offsetY=0, dragging=false;
+
+    chip.addEventListener('pointerdown', (e)=>{
+      const rect = chip.getBoundingClientRect();
+      offsetX = e.clientX - rect.left;
+      offsetY = e.clientY - rect.top;
+      chip.style.width = rect.width+'px';
+      chip.style.position = 'fixed';
+      chip.style.left = rect.left+'px';
+      chip.style.top = rect.top+'px';
+      chip.style.zIndex = 1000;
+      document.body.appendChild(chip);
+      dragging = true;
+      chip.setPointerCapture(e.pointerId);
+    });
+
+    chip.addEventListener('pointermove', (e)=>{
+      if(!dragging) return;
+      chip.style.left = (e.clientX - offsetX) + 'px';
+      chip.style.top = (e.clientY - offsetY) + 'px';
+      document.querySelectorAll('.drop-box').forEach(b=>b.classList.remove('hover'));
+      chip.style.visibility='hidden';
+      const under = document.elementFromPoint(e.clientX, e.clientY);
+      chip.style.visibility='visible';
+      const box = under && under.closest ? under.closest('.drop-box') : null;
+      if(box) box.classList.add('hover');
+    });
+
+    chip.addEventListener('pointerup', (e)=>{
+      if(!dragging) return;
+      dragging = false;
+      document.querySelectorAll('.drop-box').forEach(b=>b.classList.remove('hover'));
+      chip.style.visibility='hidden';
+      const under = document.elementFromPoint(e.clientX, e.clientY);
+      chip.style.visibility='visible';
+      const box = under && under.closest ? under.closest('.drop-box') : null;
+      handleDrop(chip, box);
+    });
+  }
+
+  function handleDrop(chip, box){
+    const s = state.level;
+    const idx = parseInt(chip.dataset.idx,10);
+    const item = s.items[idx];
+
+    if(box && box.dataset.category === item.type){
+      item.placedOk = true;
+      s.placed++;
+      document.getElementById('roundIndicator').textContent = `Clasificadas: ${s.placed}/${s.total}`;
+      showToast('¡Correcto! 🎉','success');
+      reactMascot('happy');
+      chip.remove();
+      const boxItems = document.getElementById('box-'+item.type);
+      const mini = document.createElement('div');
+      mini.className = 'chip placed-mini';
+      mini.innerHTML = fractionVisualHTML(item.num, item.den, false);
+      boxItems.appendChild(mini);
+
+      if(s.placed === s.total){
+        const stars = s.mistakes<=1 ? 3 : s.mistakes<=4 ? 2 : 1;
+        setTimeout(()=>finishLevel(s.index, stars, s.mistakes), 500);
+      }
+    } else {
+      s.mistakes++;
+      const hint = box ? 'Pensá de nuevo la regla de esa fracción.' : '¡Soltala dentro de una caja!';
+      showToast('Ups... '+hint, 'error');
+      reactMascot('sad');
+      chip.style.position='';
+      chip.style.left=''; chip.style.top=''; chip.style.width=''; chip.style.zIndex='';
+      document.getElementById('tray').appendChild(chip);
+    }
+  }
+
+  /* ================= FINISH LEVEL / SUMMARY ================= */
+  function finishLevel(index, stars, metric){
+    state.progress[index] = Math.max(state.progress[index], stars);
+
+    document.getElementById('summaryTitle').textContent = LEVELS[index].title + ' completado';
+    document.getElementById('summaryStars').innerHTML = [0,1,2].map(k=>`<span>${k<stars?'⭐':'☆'}</span>`).join('');
+    const msgs = {
+      3:'¡Perfecto! Dominás este tema como un verdadero campeón. 🏆',
+      2:'¡Muy bien hecho! Con un poco más de práctica lo vas a dominar del todo. 💪',
+      1:'¡Seguí practicando! Cada intento te acerca más. 🌱',
+    };
+    document.getElementById('summaryMsg').textContent = msgs[stars];
+
+    const nextBtn = document.getElementById('nextLevelBtn');
+    if(index < LEVELS.length-1){
+      nextBtn.style.display='inline-block';
+      nextBtn.textContent = 'Siguiente nivel ▶';
+      nextBtn.onclick = ()=>{ openLevelIntro(index+1); };
+    } else {
+      nextBtn.style.display='none';
+    }
+    launchConfetti(stars);
+    renderMenu();
+    showScreen('screen-summary');
+  }
+
+  document.getElementById('backToMenuBtn').addEventListener('click', ()=>{
+    renderMenu();
+    showScreen('screen-menu');
+  });
+  document.getElementById('nextLevelBtn').addEventListener('click', ()=>{
+    // handled via onclick set in finishLevel, this is fallback no-op
+  });
+  document.getElementById('homeBtn').addEventListener('click', ()=>{
+    renderMenu();
+    showScreen('screen-menu');
+  });
+
+  function launchConfetti(stars){
+    const colors = ['#6C5CE7','#00CEC9','#FDCB6E','#FF7675','#a29bfe'];
+    const count = stars===3 ? 60 : stars===2 ? 35 : 18;
+    for(let i=0;i<count;i++){
+      const c = document.createElement('div');
+      c.className='confetti';
+      c.style.left = Math.random()*100+'vw';
+      c.style.background = colors[randInt(0,colors.length-1)];
+      c.style.animationDuration = (2.2+Math.random()*1.6)+'s';
+      c.style.opacity = 0.85;
+      document.body.appendChild(c);
+      setTimeout(()=>c.remove(), 4200);
+    }
+  }
+
+  /* ================= INIT ================= */
+  renderMenu();
+  showScreen('screen-menu');
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Maestro de los Decimales</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;background:linear-gradient(160deg,var(--b1,#312e81),var(--b2,#6d28d9)) fixed;min-height:100vh;color:#1e293b}
+:root{--acc:#6366f1;--soft:#e0e7ff;--sh:#a5b4fc;--tx:#3730a3}
+#app{max-width:760px;margin:0 auto;padding:12px}
+#hud{display:flex;justify-content:space-between;gap:8px;background:#fff;border-radius:18px;padding:10px 16px;font-weight:700;box-shadow:0 4px 14px #0001;flex-wrap:wrap}
+.bar{height:14px;background:#cbd5e1;border-radius:9px;margin:10px 0;overflow:hidden}
+#fill{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--acc),#facc15);transition:width .4s}
+#stage{background:#fff;border-radius:26px;padding:20px;box-shadow:0 8px 24px #0002;text-align:center}
+.chip{display:inline-block;background:var(--soft);color:var(--tx);border-radius:20px;padding:4px 14px;font-weight:700;font-size:.9rem}
+.q{font-size:1.35rem;font-weight:700;margin:12px 0}
+.big{font-size:3rem;font-weight:800;margin:10px 0}
+.read{font-size:1.5rem;font-weight:700;background:#fff7ed;border-radius:16px;padding:14px;margin:8px 0;color:#9a3412}
+.c0{color:#7c3aed}.c1{color:#2563eb}.c2{color:#16a34a}.c3{color:#ea580c}
+.chart{display:flex;justify-content:center;align-items:center;gap:6px;margin:12px 0;flex-wrap:wrap}
+.pc{border:3px solid currentColor;border-radius:14px;background:#fff;padding:6px 10px;min-width:78px}
+.pc small{display:block;font-size:.7rem;font-weight:700}.pc b{font-size:2rem}
+.cm{font-size:2rem;font-weight:800}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+button{font:inherit;cursor:pointer;border:none;border-radius:16px;padding:14px;font-weight:700;font-size:1.1rem;background:var(--soft);color:var(--tx);box-shadow:0 4px 0 var(--sh);transition:transform .1s}
+button:active{transform:translateY(3px);box-shadow:none}
+.opt{min-height:70px;background:#f1f5f9;box-shadow:0 4px 0 #cbd5e1;color:#1e293b}
+.opt.right{background:#bbf7d0;box-shadow:0 4px 0 #22c55e}.opt.wrong{background:#fecaca;box-shadow:0 4px 0 #ef4444}
+.disp{font-size:2.4rem;font-weight:800;min-height:64px;border:4px solid var(--acc);border-radius:16px;margin:12px auto;max-width:320px;display:flex;align-items:center;justify-content:center;gap:6px}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:320px;margin:0 auto}
+.pad button{font-size:1.5rem;padding:12px}.pad .go{grid-column:span 3;background:#22c55e;color:#fff;box-shadow:0 4px 0 #15803d}
+.nx{background:#22c55e;color:#fff;box-shadow:0 4px 0 #15803d;font-size:1.3rem;padding:14px 34px;margin-top:10px}
+.row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.msg{font-size:1.3rem;font-weight:800;margin:14px 0 6px}.msg.ok{color:#16a34a}.msg.bad{color:#dc2626}
+.fr{display:inline-flex;flex-direction:column;align-items:center;font-weight:800;vertical-align:middle;line-height:1.15}
+.fr b:first-child{border-bottom:3px solid currentColor;padding:0 8px}
+.grid{display:grid;grid-template-columns:repeat(10,1fr);gap:2px;width:min(100%,280px);margin:10px auto}
+.grid i{aspect-ratio:1;background:#e5e7eb;border-radius:3px}
+.k1 i{aspect-ratio:.55}
+.grid .a0{background:#6366f1}.grid .a1{background:#3b82f6}.grid .a2{background:#22c55e}
+.vert{display:inline-block;text-align:right;font:800 2rem monospace;margin:10px;min-width:150px}
+.vert hr{border:0;border-top:4px solid #1e293b;margin:4px 0}.vert s{text-decoration:none;opacity:.3}
+.hero{font-size:4.5rem}.stars{font-size:2.4rem;margin:6px}
+input#nm{font:inherit;font-size:1.4rem;padding:12px;border:3px solid var(--acc);border-radius:14px;text-align:center;width:100%;max-width:340px;margin:12px 0}
+.shake{animation:sh .4s}@keyframes sh{25%{transform:translateX(-9px)}75%{transform:translateX(9px)}}
+.cf{position:fixed;top:-20px;width:10px;height:14px;z-index:99;animation:fall 1.8s ease-in forwards;pointer-events:none}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+#diploma{background:#fffdf5;border:14px double #c9971c;padding:8px;margin:6px auto;max-width:700px;box-shadow:0 8px 24px #0003}
+#diploma .in{border:3px solid #2563eb;padding:18px 14px;text-align:center}
+.dt{color:#2563eb;font-weight:800;letter-spacing:3px}.dn{font:italic 800 2.6rem Georgia,serif;color:#1e3a8a;border-bottom:2px solid #c9971c;display:inline-block;padding:0 20px;margin:6px 0;word-break:break-word}
+.dti{font:800 1.7rem Georgia,serif;color:#b45309;margin:10px 0}.dp{font-size:1.3rem;font-weight:700;color:#16a34a}
+#app{position:relative;z-index:1}
+.deco{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.deco span{position:absolute;font-size:2.2rem;opacity:.35;animation:fl 6s ease-in-out infinite}
+@keyframes fl{50%{transform:translateY(-18px) rotate(10deg)}}
+.ths{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.th{background:#f8fafc;box-shadow:0 4px 0 #cbd5e1;color:#1e293b}.th.on{outline:4px solid var(--acc);background:var(--soft)}.th span{display:block;font-size:2.2rem}
+@media(max-width:480px){.opts{grid-template-columns:1fr}.big{font-size:2.3rem}.q{font-size:1.15rem}}
+@media print{@page{size:landscape;margin:8mm}body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}#hud,.bar,.np,.deco{display:none!important}#app{padding:0;max-width:none}#stage{box-shadow:none;padding:0}#diploma{box-shadow:none;max-width:none}}
+</style>
+</head>
+<body>
+<div class="deco" id="deco"></div>
+<div id="app">
+<div id="hud"><span id="hl"></span><span id="he"></span><span>✅ <b id="ho">0</b> &nbsp; ❌ <b id="hr">0</b></span></div>
+<div class="bar"><i id="fill"></i></div>
+<div id="stage"></div>
+</div>
+<script>
+const $=s=>document.querySelector(s),R=(a,b)=>Math.floor(Math.random()*(b-a+1))+a,pick=a=>a[R(0,a.length-1)],shuf=a=>a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(x=>x[1]);
+/* ---------- sonido y confeti ---------- */
+let AC;const tone=(f,t,d,ty='sine',v=.15)=>{try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain(),n=AC.currentTime+t;o.type=ty;o.frequency.value=f;g.gain.setValueAtTime(v,n);g.gain.exponentialRampToValueAtTime(.001,n+d);o.connect(g);g.connect(AC.destination);o.start(n);o.stop(n+d)}catch(e){}};
+const good=()=>[523,659,784].forEach((f,k)=>tone(f,k*.1,.25)),bad=()=>{tone(200,0,.25,'sawtooth',.1);tone(150,.15,.3,'sawtooth',.1)};
+const confetti=()=>{for(let i=0;i<40;i++){const e=document.createElement('i');e.className='cf';e.style.cssText=`left:${R(0,100)}vw;background:hsl(${R(0,360)},90%,60%);animation-delay:${Math.random()*.3}s`;document.body.appendChild(e);setTimeout(()=>e.remove(),2200)}};
+/* ---------- lectura en palabras ---------- */
+const U=['cero','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve','diez','once','doce','trece','catorce','quince','dieciséis','diecisiete','dieciocho','diecinueve','veinte','veintiuno','veintidós','veintitrés','veinticuatro','veinticinco','veintiséis','veintisiete','veintiocho','veintinueve'],
+T=['','','','treinta','cuarenta','cincuenta','sesenta','setenta','ochenta','noventa'],
+C=['','ciento','doscientos','trescientos','cuatrocientos','quinientos','seiscientos','setecientos','ochocientos','novecientos'];
+const w=n=>n<30?U[n]:n<100?T[n/10|0]+(n%10?' y '+U[n%10]:''):n==100?'cien':C[n/100|0]+(n%100?' '+w(n%100):'');
+const wn=n=>w(n).replace(/veintiuno$/,'veintiún').replace(/uno$/,'un');
+const leerRaw=(I,Dv,k)=>{const d=wn(Dv)+' '+['décimo','centésimo','milésimo'][k-1]+(Dv==1?'':'s');return I?wn(I)+(I==1?' entero':' enteros')+' con '+d:d};
+/* ---------- utilidades ---------- */
+const genDec=(k=pick([1,2,2,3]))=>{let d='';for(let i=0;i<k-1;i++)d+=R(0,9);return{I:pick([0,0,R(1,9),R(10,60)]),d:d+R(1,9)}};
+const str=n=>n.I+','+n.d,th=s=>{const[a,b='']=s.replace('.',',').split(',');return b.length>3?-1:(+a||0)*1000+ +b.padEnd(3,'0')};
+const decv=(n,k)=>{const s=String(n).padStart(k+1,'0');return s.slice(0,-k)+','+s.slice(-k)};
+const fK=(v,k)=>{const I=Math.floor(v/1000),f=String(v%1000).padStart(3,'0').slice(0,k);return k?I+','+f:''+I};
+const col=s=>{const[a,b='']=s.split(',');return`<span class=c0>${a}</span>`+(s.includes(',')?',':'')+[...b].map((c,i)=>`<span class=c${i+1}>${c}</span>`).join('')};
+const chart=s=>{const[a,b='']=s.split(',');const c=(h,cl,v)=>`<div class="pc ${cl}"><small>${h}</small><b>${v||'&nbsp;'}</b></div>`;return`<div class=chart>${c('Enteros','c0',a)}<div class=cm>,</div>${c('Décimos','c1',b[0])}${c('Centésimos','c2',b[1])}${c('Milésimos','c3',b[2])}</div>`};
+const fr=(n,d)=>`<span class=fr><b>${n}</b><b>${d}</b></span>`;
+const grid=(n,k,cl)=>{let h='';for(let j=0;j<(k==1?10:100);j++)h+=`<i class="${j<n?(!cl?'a0':k==2&&j>=Math.floor(n/10)*10?'a2':'a1'):''}"></i>`;return`<div class="grid k${k}">${h}</div>`};
+const vert=(A,B,ka,kb,op)=>{const m=Math.max(ka,kb),f=(v,k)=>fK(v,k)+(k<m?`<s>${k?'':','}${'0'.repeat(m-k)}</s>`:'');return`<div class=vert><div>${f(A,ka)}</div><div>${op?'−':'+'} ${f(B,kb)}</div><hr><div>?</div></div>`};
+/* ---------- generadores de ejercicios ---------- */
+const G=[];
+G[0]=()=>{const n=genDec(),k=n.d.length,Dv=+n.d,ok=leerRaw(n.I,Dv,k),s=new Set([ok]);
+[1,2,3].filter(x=>x!=k).forEach(x=>s.add(leerRaw(n.I,Dv,x)));s.add(leerRaw(n.I,+[...n.d].reverse().join(''),k));
+let t=0;while(s.size<4)s.add(leerRaw(n.I+ ++t,Dv,k));
+return{kind:'mc',q:'¿Cómo se lee este número?',body:`<div class=big>${col(str(n))}</div>`,opts:shuf([...s].slice(0,4).map(v=>({v,h:v}))),ans:ok,viz:()=>chart(str(n))}};
+G[1]=()=>{const n=genDec();return{kind:'num',q:'Escribí con cifras:',body:`<div class=read>“${leerRaw(n.I,+n.d,n.d.length)}”</div>`,ans:th(str(n)),viz:g=>chart(g)}};
+G[2]=()=>{const t=R(0,2),k=t?pick([1,2,2,3]):pick([1,2]);let n;do n=R(1,10**k-1);while(n%10==0);
+const d=10**k,dc=decv(n,k);let opts,ans,body,q;
+if(t==2){q='¿A qué número decimal equivale?';body=`<div class=big>${fr(n,d)}</div>`;opts=[...new Set([dc,decv(n,1),decv(n,2),decv(n,3),n+',0'])].slice(0,4).map(v=>({v,h:v}));ans=dc}
+else{q=t?'Elegí la fracción decimal equivalente:':'¿Qué fracción está pintada?';body=t?`<div class=big>${dc}</div>`:grid(n,k,0);
+opts=[...new Set([n+'/'+d,n+'/10',n+'/100',n+'/1000',(n+1)+'/'+d])].slice(0,4).map(v=>{const[a,b]=v.split('/');return{v,h:fr(a,b)}});ans=n+'/'+d}
+return{kind:'mc',q,body,opts:shuf(opts),ans,viz:()=>k<3?grid(n,k,1):chart(dc)}};
+const rn=(k,mx)=>{const I=R(k?0:1,mx),f=k?(k>1?R(0,10**(k-1)-1)*10:0)+R(1,9):0;return I*1000+f*10**(3-k)};
+const C4=[{ks:[2],u:'$',t:(a,b)=>`Compraste un cuaderno de $ ${a} y una regla de $ ${b}. ¿Cuánto pagaste en total?`},
+{ks:[1,2,3],u:'m',t:(a,b)=>`Una cinta mide ${a} m y otra mide ${b} m. Si las unís, ¿cuántos metros miden?`},
+{ks:[1,2,3],u:'kg',t:(a,b)=>`Un paquete pesa ${a} kg y otro pesa ${b} kg. ¿Cuánto pesan juntos?`},{ks:[1,2,3],u:'',t:0}];
+const C5=[{ks:[2],u:'$',t:(a,b)=>`Tenías $ ${a} y gastaste $ ${b}. ¿Cuánto dinero te queda?`},
+{ks:[1,2,3],u:'m',t:(a,b)=>`Una soga mide ${a} m y se cortan ${b} m. ¿Cuánto mide lo que queda?`},
+{ks:[1,2,3],u:'l',t:(a,b)=>`Un bidón tiene ${a} l de agua y se usan ${b} l. ¿Cuántos litros quedan?`},{ks:[1,2,3],u:'',t:0}];
+const arith=op=>{const c=pick(op?C5:C4),ks=c.ks;let ka,kb,A,B;
+do{ka=pick(op&&c.u=='$'?[0,2]:op?[0,...ks]:ks);kb=pick(ks);A=rn(ka,op?40:30);B=rn(kb,op?40:30)}while(op?A<=B:ka==kb&&ks.length>1&&R(0,2));
+const a=fK(A,ka),b=fK(B,kb);
+return{kind:'num',q:c.t?c.t(a,b):'Calculá:',body:c.t?'':`<div class=big>${a} ${op?'−':'+'} ${b}</div>`,u:c.u,ans:op?A-B:A+B,viz:()=>vert(A,B,ka,kb,op)}};
+G[3]=()=>arith(0);G[4]=()=>arith(1);
+/* ---------- motor del juego ---------- */
+const L=['Leer decimales','Escribir decimales','Decimales y fracciones','Sumar decimales','Restar decimales'],IC=['📖','✏️','🔁','➕','➖'];
+const TH=[
+{n:'Espacio',e:'🚀',w:'Misión',g:'a',b:['#312e81','#6d28d9'],acc:'#6366f1',soft:'#e0e7ff',sh:'#a5b4fc',tx:'#3730a3',d:['⭐','🪐','🚀','🌙','☄️','👨‍🚀'],p:['🚀 ¡Despegue perfecto!','⭐ ¡Misión cumplida!','🪐 ¡Increíble, astronauta!']},
+{n:'Fútbol',e:'⚽',w:'Partido',g:'o',b:['#14532d','#4ade80'],acc:'#16a34a',soft:'#dcfce7',sh:'#86efac',tx:'#166534',d:['⚽','🥅','🏆','👟','🧤','📣'],p:['⚽ ¡GOOOL!','🥅 ¡Golazo!','🏆 ¡Qué jugada!']},
+{n:'Selva',e:'🦜',w:'Camino',g:'o',b:['#365314','#a3e635'],acc:'#65a30d',soft:'#ecfccb',sh:'#bef264',tx:'#3f6212',d:['🦜','🌴','🐒','🦋','🐍','🌺'],p:['🦜 ¡Qué explorador!','🌴 ¡Seguí así!','🦋 ¡Muy bien!']},
+{n:'Océano',e:'🐬',w:'Inmersión',g:'a',b:['#0c4a6e','#22d3ee'],acc:'#0284c7',soft:'#e0f2fe',sh:'#7dd3fc',tx:'#075985',d:['🐬','🐙','🐠','🐚','🦀','🫧'],p:['🐬 ¡Excelente buceo!','🐠 ¡Qué bien nadás!','🐙 ¡Perfecto!']}];
+let TI=0;
+function applyT(){const t=TH[TI],r=document.documentElement.style;r.setProperty('--b1',t.b[0]);r.setProperty('--b2',t.b[1]);r.setProperty('--acc',t.acc);r.setProperty('--soft',t.soft);r.setProperty('--sh',t.sh);r.setProperty('--tx',t.tx);
+$('#deco').innerHTML=[...t.d,...t.d].map((e,k)=>`<span style="left:${(k*9+R(0,6))%92}%;top:${R(3,90)}%;animation-delay:${k*.5}s">${e}</span>`).join('')}
+const setT=i=>{TI=i;applyT();home()};
+let S={lv:0,i:0,ok:0,err:0,lok:0,lerr:0},ex,typ='',lock=false;
+const hud=()=>{$('#hl').textContent=`Nivel ${S.lv+1}/5`;$('#he').textContent=`Ejercicio ${Math.min(S.i+1,10)}/10`;$('#ho').textContent=S.ok;$('#hr').textContent=S.err;$('#fill').style.width=S.i*10+'%'};
+const pct=()=>Math.round(S.ok/Math.max(1,S.ok+S.err)*100);
+function home(){S={lv:0,i:0,ok:0,err:0,lok:0,lerr:0};hud();$('#stage').innerHTML=`<div class=hero>${TH[TI].e}</div><h1>Maestro de los Decimales</h1><p>Elegí tu temática</p><div class=ths>${TH.map((t,i)=>`<button class="th${i==TI?' on':''}" onclick=setT(${i})><span>${t.e}</span>${t.n}</button>`).join('')}</div><button class=nx onclick=next()>¡Jugar! ▶</button>`}
+function next(){ex=G[S.lv]();typ='';lock=false;draw();hud()}
+function draw(){let h=`<div class=chip>${TH[TI].e} ${TH[TI].w} ${S.lv+1}: ${IC[S.lv]} ${L[S.lv]}</div><div class=q>${ex.q}</div>${ex.body||''}`;
+if(ex.kind=='mc')h+=`<div class=opts>${ex.opts.map((o,i)=>`<button class=opt onclick=sel(${i})>${o.h}</button>`).join('')}</div>`;
+else h+=`<div class=disp>${ex.u=='$'?'$':''}<span id=typ>&nbsp;</span>${ex.u&&ex.u!='$'?ex.u:''}</div><div class=pad>${[1,2,3,4,5,6,7,8,9,',',0,'⌫'].map(k=>`<button onclick="key('${k}')">${k}</button>`).join('')}<button class=go onclick=chk()>Comprobar ✔</button></div>`;
+$('#stage').innerHTML=h+'<div id=fb></div>'}
+function key(k){if(lock)return;if(k=='⌫')typ=typ.slice(0,-1);else if(k==','){if(!typ.includes(','))typ+=typ?',':'0,'}else if(typ.replace(',','').length<8)typ+=k;$('#typ').textContent=typ||'\u00a0'}
+document.onkeydown=e=>{if(!ex||ex.kind!='num'||lock||!$('#typ'))return;if(/^\d$/.test(e.key))key(e.key);else if(e.key==','||e.key=='.')key(',');else if(e.key=='Backspace')key('⌫');else if(e.key=='Enter')chk()};
+const chk=()=>{if(typ&&!lock)result(th(typ)===ex.ans,typ)};
+const sel=i=>{if(lock)return;const ok=ex.opts[i].v===ex.ans;document.querySelectorAll('.opt')[i].classList.add(ok?'right':'wrong');result(ok,i)};
+function result(ok,g){lock=true;const fb=$('#fb');
+if(ok){S.ok++;S.lok++;good();confetti();fb.innerHTML=`<div class="msg ok">${pick(TH[TI].p)}</div><button class=nx onclick=adv()>Siguiente ▶</button>`}
+else{S.err++;S.lerr++;bad();const s=$('#stage');s.classList.add('shake');setTimeout(()=>s.classList.remove('shake'),450);
+fb.innerHTML=`<div class="msg bad">Casi… mirá esto 👀</div>${ex.viz(g)}<div class=row><button onclick=again()>↻ Reintentar</button><button onclick=adv()>Saltar ▶</button></div>`}
+$('#ho').textContent=S.ok;$('#hr').textContent=S.err}
+const again=()=>{lock=false;typ='';draw()};
+function adv(){S.i++;hud();if(S.i<10)return next();S.lv==4?final():lvDone()}
+function lvDone(){const p=S.lok/(S.lok+S.lerr),st=p>=.9?3:p>=.7?2:1;
+$('#stage').innerHTML=`<div class=hero>🌟</div><h2>¡${TH[TI].w} ${S.lv+1} superad${TH[TI].g}!</h2><div class=stars>${'⭐'.repeat(st)}</div><p>✅ ${S.lok} &nbsp; ❌ ${S.lerr}</p><button class=nx onclick=go()>Nivel ${S.lv+2}: ${IC[S.lv+1]} ${L[S.lv+1]} ▶</button>`}
+function go(){S.lv++;S.i=0;S.lok=S.lerr=0;next()}
+function final(){confetti();$('#stage').innerHTML=`<div class=hero>🏆</div><h2>¡Completaste los 5 niveles!</h2><p class=dp style="font-size:1.5rem;font-weight:800;color:#16a34a">${pct()}% de precisión</p><p>¿Cómo te llamás?</p><input id=nm maxlength=30 placeholder="Escribí tu nombre"><br><button class=nx onclick=dip()>Crear mi diploma 🎓</button>`}
+const esc=s=>s.replace(/[&<>"]/g,c=>'&#'+c.charCodeAt(0)+';');
+function dip(){const n=$('#nm').value.trim();if(!n)return $('#nm').focus();
+const dt=new Date().toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'});
+$('#stage').innerHTML=`<div id=diploma><div class=in><svg viewBox="0 0 120 150" width="100" height="125"><path d="M35 80L20 148l28-14 12 14V85z" fill="#2563eb"/><path d="M85 80l15 68-28-14-12 14V85z" fill="#1d4ed8"/><circle cx="60" cy="55" r="46" fill="#f5c542" stroke="#c9971c" stroke-width="5"/><circle cx="60" cy="55" r="34" fill="#fde68a" stroke="#c9971c" stroke-width="2"/><path d="M60 30l7.5 15.5 17 2.5-12.3 12 2.9 17L60 69l-15.1 8 2.9-17-12.3-12 17-2.5z" fill="#f59e0b"/></svg>
+<div class=dt>CERTIFICADO DE LOGRO</div><div>Se otorga a</div><div class=dn>${esc(n)}</div><div>por completar los 5 niveles de números decimales y obtener el título de</div><div class=dti>Maestro/a de los Números Decimales</div><div class=dp>${pct()}% de precisión</div><div style="margin-top:12px;color:#475569">${dt}</div></div></div>
+<div class="row np"><button class=nx onclick="window.print()">🖨️ Imprimir / Guardar en PDF</button><button onclick=home()>↺ Jugar de nuevo</button></div>`}
+applyT();home();
+</script>
+</body>
+</html>
