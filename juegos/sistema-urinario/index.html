@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>¡Misión: Sangre Limpia! – El Sistema Urinario</title>
+<style>
+/* ===== Paleta y base ===== */
+:root{--azul:#2b7fd6;--rojo:#d9534f;--amar:#ffd23f;--verde:#2fb575;--tinta:#1f3a63;--crema:#fff7e0}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:"Trebuchet MS","Segoe UI",Arial,sans-serif;color:var(--tinta);
+ background:linear-gradient(160deg,#d6efff 0%,#fff4d6 100%);-webkit-tap-highlight-color:transparent}
+main{max-width:1000px;margin:0 auto;padding:12px}
+h1{margin:6px 0 2px;font-size:clamp(1.6rem,4.5vw,2.5rem);color:var(--azul)}
+h2{margin:4px 0 8px}
+.screen{display:none}.screen.on{display:block}
+.panel{background:#fff;border:4px solid var(--tinta);border-radius:22px;padding:16px;box-shadow:0 6px 0 rgba(31,58,99,.25)}
+.btn{font:inherit;font-weight:bold;font-size:1.1rem;color:#fff;background:var(--verde);border:3px solid var(--tinta);
+ border-radius:16px;padding:12px 22px;cursor:pointer;box-shadow:0 5px 0 var(--tinta);transition:transform .1s}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--tinta)}
+.btn:disabled{background:#b9c4d4;cursor:not-allowed;box-shadow:0 5px 0 #7d8aa0}
+.btn.big{font-size:1.5rem;padding:16px 30px;background:var(--amar);color:var(--tinta)}
+.btn.big:not(:disabled){animation:glow 1s infinite}
+@keyframes glow{50%{box-shadow:0 5px 0 var(--tinta),0 0 26px 8px #ffd23f}}
+/* ===== Pantalla de aprendizaje ===== */
+.learn{display:grid;grid-template-columns:minmax(220px,320px) 1fr;gap:16px;align-items:start}
+@media(max-width:700px){.learn{grid-template-columns:1fr}}
+#body-svg{width:100%;max-height:70vh;touch-action:manipulation}
+.organ{cursor:pointer}
+.organ:hover .sh,.organ:focus .sh,.organ.sel .sh{stroke:var(--azul);stroke-width:5;filter:drop-shadow(0 0 6px #5db4ff)}
+.organ:focus{outline:none}
+#card{min-height:250px;background:var(--crema);border-radius:18px;padding:14px;border:3px dashed var(--amar)}
+#card.pop{animation:pop .35s}
+@keyframes pop{0%{transform:scale(.9);opacity:.3}100%{transform:scale(1);opacity:1}}
+#card .ico{font-size:3rem}
+.dato{background:#e4f6ec;border-left:6px solid var(--verde);padding:8px 12px;border-radius:10px}
+/* ===== HUD ===== */
+#hud{display:none;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:8px}
+#hud.on{display:flex}
+.chip{background:#fff;border:3px solid var(--tinta);border-radius:14px;padding:4px 12px;font-weight:bold}
+.bar{width:130px;height:16px;background:#f4d3d1;border-radius:9px;border:2px solid var(--tinta);overflow:hidden;display:inline-block;vertical-align:middle}
+.bar i{display:block;height:100%;width:100%;background:var(--verde);transition:width .3s}
+/* ===== Juego ===== */
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.95rem;margin-bottom:8px}
+.stagebox{position:relative;max-width:620px;margin:0 auto}
+#stage{width:100%;display:block;border-radius:22px;border:4px solid var(--tinta);touch-action:none;user-select:none}
+.drop{cursor:pointer}
+.drop text{font-size:20px;font-weight:bold;pointer-events:none}
+.fl{font-size:17px;font-weight:bold;text-anchor:middle;animation:up 1.1s forwards;pointer-events:none;paint-order:stroke;stroke:#fff;stroke-width:4px}
+@keyframes up{to{transform:translateY(-40px);opacity:0}}
+#toast{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:var(--tinta);color:#fff;font-weight:bold;
+ padding:10px 18px;border-radius:16px;text-align:center;width:88%;display:none;z-index:3;font-size:1.05rem}
+#toast.on{display:block;animation:pop .3s}
+#bladder.pulse{animation:pulse .5s infinite alternate;transform-box:fill-box;transform-origin:center}
+@keyframes pulse{to{transform:scale(1.1)}}
+#fillr{transition:transform .5s}
+#flow{stroke-dasharray:6 8;animation:dash .4s linear infinite;display:none}
+#flow.on{display:block}
+@keyframes dash{to{stroke-dashoffset:-14}}
+.act{text-align:center;margin-top:12px}
+/* ===== Trivia ===== */
+.opt{display:block;width:100%;text-align:left;margin:10px 0;background:#eaf4ff;color:var(--tinta);box-shadow:0 4px 0 var(--tinta)}
+.opt.ok{background:var(--verde);color:#fff;animation:pop .4s}
+.opt.no{background:var(--rojo);color:#fff;animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+#fb{min-height:52px;font-size:1.1rem;font-weight:bold}
+/* ===== Final ===== */
+.badges{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.badge{background:var(--crema);border:3px solid var(--amar);border-radius:16px;padding:10px;text-align:center}
+.badge b{font-size:2.4rem;display:block}
+.badge.lock{filter:grayscale(1);opacity:.45;border-color:#999}
+/* Enlace de regreso al portal */
+.back{display:inline-block;margin:4px 0 10px;padding:8px 16px;background:#fff;color:var(--azul);font-weight:bold;text-decoration:none;border:3px solid var(--azul);border-radius:14px}
+.back:hover{background:#e8f4ff}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+ <a class="back" href="../../index.html">🏠 Volver al portal</a>
+ <!-- Barra de estado (visible en juego y trivia) -->
+ <div id="hud">
+  <span class="chip">Nivel <span id="h-lvl">1</span>/3</span>
+  <span class="chip">⭐ <span id="h-pts">0</span></span>
+  <span class="chip">💧 Sangre limpia: <span id="h-cl">0</span></span>
+  <span class="chip">🟡 Orina: <span id="h-ur">0</span></span>
+  <span class="chip">Pureza <span class="bar"><i id="h-pu"></i></span></span>
+ </div>
+
+ <!-- FASE 1: aprendizaje interactivo -->
+ <section id="s-learn" class="screen on panel">
+  <h1>¡Misión: Sangre Limpia!</h1>
+  <p>El sistema urinario es la <b>planta de filtrado del cuerpo</b>. Tocá cada órgano para conocerlo.</p>
+  <div class="learn">
+   <svg id="body-svg" viewBox="0 0 300 360" role="img" aria-label="Esquema del sistema urinario">
+    <path d="M70 20Q150 -5 230 20Q262 120 236 220Q214 300 150 345Q86 300 64 220Q38 120 70 20Z" fill="#ffe6d5" stroke="#e5a98b" stroke-width="4"/>
+    <!-- Uréteres -->
+    <g class="organ" data-k="ure" tabindex="0"><path class="sh" d="M112 150Q120 205 143 232M188 150Q180 205 157 232" fill="none" stroke="#f0b92b" stroke-width="8" stroke-linecap="round"/>
+     <path d="M112 150Q120 205 143 232M188 150Q180 205 157 232" fill="none" stroke="transparent" stroke-width="26" pointer-events="stroke"/></g>
+    <!-- Riñones -->
+    <g class="organ" data-k="rin" tabindex="0"><ellipse class="sh" cx="100" cy="112" rx="23" ry="40" transform="rotate(12 100 112)" fill="#d9534f" stroke="#9c2f2c" stroke-width="3"/>
+     <ellipse class="sh" cx="200" cy="112" rx="23" ry="40" transform="rotate(-12 200 112)" fill="#d9534f" stroke="#9c2f2c" stroke-width="3"/></g>
+    <!-- Vejiga -->
+    <g class="organ" data-k="vej" tabindex="0"><ellipse class="sh" cx="150" cy="260" rx="38" ry="30" fill="#ffd23f" stroke="#c99a00" stroke-width="3"/></g>
+    <!-- Uretra -->
+    <g class="organ" data-k="uret" tabindex="0"><path class="sh" d="M150 290V335" stroke="#f0b92b" stroke-width="10" stroke-linecap="round"/>
+     <path d="M150 290V335" stroke="transparent" stroke-width="30" pointer-events="stroke"/></g>
+    <g font-size="12" font-weight="bold" fill="#1f3a63" pointer-events="none">
+     <text x="55" y="112" text-anchor="middle">Riñón</text><text x="245" y="112" text-anchor="middle">Riñón</text>
+     <text x="105" y="205" text-anchor="end">Uréter</text><text x="150" y="263" text-anchor="middle">Vejiga</text>
+     <text x="162" y="320">Uretra</text></g>
+   </svg>
+   <div>
+    <div id="card"><div class="ico">👆</div><h2>Tocá un órgano</h2><p>Descubrí qué hace cada parte de la planta de filtrado.</p></div>
+    <p><b>Órganos explorados: <span id="xp">0</span>/4</b></p>
+    <button class="btn big" id="go" disabled>¡Comenzar misión!</button>
+   </div>
+  </div>
+ </section>
+
+ <!-- FASE 2: juego principal -->
+ <section id="s-game" class="screen panel">
+  <div class="legend">
+   <span>🟢🔵 <b>Nutrientes</b>: dejalos pasar</span>
+   <span>🟤 <b>Desechos ✕</b>: ¡tocalos para filtrarlos en el riñón!</span>
+   <span>🟡 <b>Orina</b>: viaja por los uréteres</span>
+  </div>
+  <div class="stagebox">
+   <div id="toast"></div>
+   <svg id="stage" viewBox="0 0 600 500">
+    <defs><clipPath id="bc"><ellipse cx="300" cy="400" rx="72" ry="55"/></clipPath></defs>
+    <rect width="600" height="500" fill="#fff0ea"/>
+    <!-- Vasos sanguíneos (carriles de caída) -->
+    <rect x="65" y="0" width="110" height="255" fill="#ffc9c9"/><rect x="425" y="0" width="110" height="255" fill="#ffc9c9"/>
+    <text x="120" y="16" font-size="12" text-anchor="middle" fill="#9c2f2c" font-weight="bold">vaso sanguíneo</text>
+    <text x="480" y="16" font-size="12" text-anchor="middle" fill="#9c2f2c" font-weight="bold">vaso sanguíneo</text>
+    <!-- Uréteres -->
+    <polyline points="120,240 120,300 300,345" fill="none" stroke="#f0c04a" stroke-width="14" stroke-linejoin="round" stroke-linecap="round"/>
+    <polyline points="480,240 480,300 300,345" fill="none" stroke="#f0c04a" stroke-width="14" stroke-linejoin="round" stroke-linecap="round"/>
+    <!-- Riñones con colador -->
+    <ellipse cx="120" cy="170" rx="66" ry="74" fill="#c24f4a" opacity=".55" stroke="#8d2b27" stroke-width="4"/>
+    <ellipse cx="480" cy="170" rx="66" ry="74" fill="#c24f4a" opacity=".55" stroke="#8d2b27" stroke-width="4"/>
+    <g stroke="#fff" stroke-width="3" stroke-dasharray="5 6"><line x1="70" y1="170" x2="170" y2="170"/><line x1="430" y1="170" x2="530" y2="170"/></g>
+    <!-- Vejiga y uretra -->
+    <g id="bladder"><ellipse cx="300" cy="400" rx="72" ry="55" fill="#fff"/>
+     <g clip-path="url(#bc)"><rect id="fillr" x="220" y="345" width="160" height="110" fill="#ffd23f" style="transform:translateY(110px)"/></g>
+     <ellipse cx="300" cy="400" rx="72" ry="55" fill="none" stroke="#c99a00" stroke-width="5"/>
+     <text id="pct" x="300" y="408" text-anchor="middle" font-size="22" font-weight="bold" fill="#1f3a63">0%</text></g>
+    <rect x="290" y="455" width="20" height="45" fill="#ffe9a8" stroke="#c99a00" stroke-width="3"/>
+    <line id="flow" x1="300" y1="455" x2="300" y2="500" stroke="#e0a800" stroke-width="8"/>
+    <g font-size="15" font-weight="bold" fill="#1f3a63" pointer-events="none">
+     <text x="120" y="265" text-anchor="middle">Riñón (colador)</text><text x="480" y="265" text-anchor="middle">Riñón (colador)</text>
+     <text x="195" y="320" text-anchor="middle">Uréter</text><text x="405" y="320" text-anchor="middle">Uréter</text>
+     <text x="395" y="400">Vejiga</text><text x="325" y="485">Uretra</text></g>
+    <g id="drops"></g>
+   </svg>
+  </div>
+  <div class="act"><button class="btn big" id="rel" disabled>🚽 ¡Liberar Uretra!</button></div>
+ </section>
+
+ <!-- FASE 3: trivia -->
+ <section id="s-quiz" class="screen panel">
+  <h2 id="qh"></h2><h1 style="font-size:1.5rem;color:var(--tinta)" id="qq"></h1>
+  <div id="qo"></div><div id="fb"></div>
+  <button class="btn" id="qn" style="display:none">Siguiente</button>
+ </section>
+
+ <!-- Final -->
+ <section id="s-end" class="screen panel">
+  <h1>🎉 ¡Misión cumplida!</h1>
+  <p id="sum" style="font-size:1.15rem"></p>
+  <div class="badges" id="bd"></div>
+  <button class="btn big" id="again">Jugar de nuevo</button>
+  <a class="back" href="../../index.html" style="margin-left:10px">🏠 Volver al portal</a>
+ </section>
+</main>
+
+<script>
+/* ===================== DATOS PEDAGÓGICOS ===================== */
+const ORG={
+ rin:{i:"🫘",n:"Riñones: los Filtros Mágicos",f:"Filtran la sangre, separan la \"basura\" (desechos) y fabrican la orina. La sangre limpia vuelve al cuerpo.",d:"¡Tus riñones limpian toda tu sangre unas 40 veces por día!"},
+ ure:{i:"🚰",n:"Uréteres: las Tuberías",f:"Son dos tubitos que llevan la orina, gota a gota, desde los riñones hasta la vejiga.",d:"Sus paredes se mueven como olas y empujan la orina hacia abajo."},
+ vej:{i:"🎈",n:"Vejiga: el Globo de Depósito",f:"Es una bolsita elástica que guarda la orina. Cuando se llena, le avisa al cerebro.",d:"¡En una persona adulta puede guardar casi medio litro de orina!"},
+ uret:{i:"🚪",n:"Uretra: la Puerta de Salida",f:"Es el conducto final por donde sale la orina cuando vamos al baño.",d:"Tiene un músculo que funciona como una llave: se abre cuando vos decidís."}
+};
+// [pregunta, opciones, índice correcto, explicación]
+const Q=[
+ ["¿Qué órgano funciona como un globo elástico guardando la orina?",["Riñón","Vejiga","Uretra"],1,"La vejiga se estira como un globito."],
+ ["¿Qué hacen los riñones?",["Digieren la comida","Filtran la sangre y fabrican orina","Bombean la sangre"],1,"Son los filtros mágicos del cuerpo."],
+ ["¿Cuántos riñones tenemos normalmente?",["4","1","2"],2,"Tenemos dos riñones, uno a cada lado."],
+ ["Los uréteres son como...",["tuberías que llevan la orina a la vejiga","bolsas que guardan la sangre","filtros que limpian la sangre"],0,"Conectan los riñones con la vejiga."],
+ ["¿Por dónde sale la orina del cuerpo?",["Uréter","Uretra","Riñón"],1,"La uretra es la puerta de salida."],
+ ["¿Qué órgano le avisa al cerebro que hay que ir al baño?",["Los pulmones","El corazón","La vejiga"],2,"Cuando se llena, la vejiga manda la señal."],
+ ["¿Qué separan los riñones de la sangre?",["Los desechos","Los nutrientes buenos","El aire"],0,"Los desechos se convierten en orina."],
+ ["Para cuidar tus riñones conviene...",["tomar solo gaseosa","aguantar siempre las ganas","tomar agua durante el día"],2,"El agua ayuda a los riñones a trabajar bien."],
+ ["¿Cuál es el recorrido correcto de la orina?",["Riñón → Uretra → Vejiga → Uréter","Riñón → Uréter → Vejiga → Uretra","Vejiga → Riñón → Uréter → Uretra"],1,"Riñón, uréter, vejiga y uretra."]
+];
+
+/* ===================== UTILIDADES ===================== */
+const $=s=>document.querySelector(s), NS="http://www.w3.org/2000/svg";
+let AC; // Web Audio: se crea con el primer toque
+function snd(f,d=.12,t="sine",v=.12,delay=0){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();
+ const o=AC.createOscillator(),g=AC.createGain(),s=AC.currentTime+delay;o.type=t;o.frequency.value=f;
+ g.gain.setValueAtTime(v,s);g.gain.exponentialRampToValueAtTime(.001,s+d);o.connect(g);g.connect(AC.destination);o.start(s);o.stop(s+d)}catch(e){}}
+const good=()=>{snd(523,.1);snd(659,.1,"sine",.12,.1);snd(784,.2,"sine",.12,.2)}, bad=()=>snd(150,.3,"sawtooth",.08);
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on",s.id===id));
+ $("#hud").classList.toggle("on",id==="s-game"||id==="s-quiz");window.scrollTo(0,0)}
+function toast(m,ms=2200){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("on"),ms)}
+
+/* ===================== ESTADO ===================== */
+const S={};
+function resetAll(){Object.assign(S,{lvl:1,score:0,clean:0,urine:0,purity:100,bl:0,need:8,run:false,full:false,leaks:0,mistakes:0,correct:0,qi:0})}
+resetAll();
+function hud(){$("#h-lvl").textContent=S.lvl;$("#h-pts").textContent=S.score;$("#h-cl").textContent=S.clean;$("#h-ur").textContent=S.urine;
+ $("#h-pu").style.width=Math.max(0,S.purity)+"%"}
+
+/* ===================== FASE 1: APRENDIZAJE ===================== */
+const seen=new Set();
+function pick(k){const o=ORG[k],c=$("#card");
+ c.innerHTML=`<div class="ico">${o.i}</div><h2>${o.n}</h2><p>${o.f}</p><p class="dato">💡 <b>Dato curioso:</b> ${o.d}</p>`;
+ c.classList.remove("pop");void c.offsetWidth;c.classList.add("pop");
+ document.querySelectorAll(".organ").forEach(g=>g.classList.toggle("sel",g.dataset.k===k));
+ seen.add(k);$("#xp").textContent=seen.size;if(seen.size===4)$("#go").disabled=false;snd(600,.08)}
+document.querySelectorAll(".organ").forEach(g=>{
+ ["click","mouseenter","focus"].forEach(e=>g.addEventListener(e,()=>{if(g.dataset.k!==g._last||e==="click"){pick(g.dataset.k)}g._last=g.dataset.k}));
+ g.addEventListener("mouseleave",()=>g._last=null);
+ g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();pick(g.dataset.k)}})});
+$("#go").onclick=()=>{resetAll();show("s-game");startLevel()};
+
+/* ===================== FASE 2: MINIJUEGO ===================== */
+const KX=[120,480], KY=170;
+const PATH=[[[120,240],[120,300],[300,345]],[[480,240],[480,300],[300,345]]]; // recorrido de la orina por cada uréter
+let drops=[],raf,last,sp=0;
+
+function startLevel(){
+ cancelAnimationFrame(raf);drops=[];$("#drops").innerHTML="";
+ Object.assign(S,{purity:100,bl:0,need:6+2*S.lvl,full:false,run:true});sp=0;
+ $("#bladder").classList.remove("pulse");$("#flow").classList.remove("on");$("#rel").disabled=true;
+ setBladder();hud();toast(`Nivel ${S.lvl}: ¡filtrá los desechos ✕!`,2600);
+ last=performance.now();raf=requestAnimationFrame(loop)}
+
+function spawn(){
+ const waste=Math.random()<.62,kx=KX[Math.random()<.5?0:1],x=kx+Math.random()*50-25;
+ const g=document.createElementNS(NS,"g");g.setAttribute("class","drop");
+ const hit=document.createElementNS(NS,"circle");hit.setAttribute("r",30);hit.setAttribute("fill","transparent");
+ const c=document.createElementNS(NS,"circle");c.setAttribute("r",19);c.setAttribute("stroke","#1f3a63");c.setAttribute("stroke-width",3);
+ c.setAttribute("fill",waste?"#8b4a2f":(Math.random()<.5?"#2fb575":"#2b9fe0"));
+ const t=document.createElementNS(NS,"text");t.setAttribute("text-anchor","middle");t.setAttribute("dy",".35em");t.setAttribute("fill","#fff");t.textContent=waste?"✕":"+";
+ g.append(hit,c,t);$("#drops").appendChild(g);
+ const d={g,c,t,x,y:-25,kx,w:waste,st:"f"};
+ g.addEventListener("pointerdown",e=>{e.preventDefault();onHit(d)});
+ drops.push(d);pos(d)}
+
+function pos(d){d.g.setAttribute("transform",`translate(${d.x.toFixed(1)},${d.y.toFixed(1)})`)}
+function kill(d){d.dead=true;d.g.remove()}
+function fl(x,y,txt,col){const t=document.createElementNS(NS,"text");t.setAttribute("class","fl");t.setAttribute("x",x);t.setAttribute("y",y);t.setAttribute("fill",col);t.textContent=txt;
+ $("#stage").appendChild(t);setTimeout(()=>t.remove(),1100)}
+function mv(d,tx,ty,s){const dx=tx-d.x,dy=ty-d.y,l=Math.hypot(dx,dy);if(l<=s){d.x=tx;d.y=ty;return true}d.x+=dx/l*s;d.y+=dy/l*s;return false}
+
+function onHit(d){
+ if(!S.run||d.st!=="f")return;
+ if(d.w){d.st="k";snd(440,.08,"triangle")}              // desecho: va al colador del riñón
+ else{S.purity-=5;S.mistakes++;bad();fl(d.x,d.y,"¡Era un nutriente!","#c0302b");kill(d);hud();check()} // error: nutriente
+}
+
+function step(d,dt){
+ if(d.st==="f"){ // cae por el vaso sanguíneo
+  d.y+=(60+22*S.lvl)*dt;
+  if(d.y>255){
+   if(d.w){S.purity-=10;S.leaks++;bad();fl(d.x,250,"¡Se escapó basura!","#c0302b")}
+   else{S.clean++;snd(700,.06,"sine",.06);fl(d.x,250,"+1 sangre limpia 💧","#168a57")}
+   kill(d);check()}
+ }else if(d.st==="k"){ // viaja al riñón y se transforma en orina
+  if(mv(d,d.kx,KY,430*dt)){d.st="u";d.i=1;d.x=d.kx;d.y=240;d.c.setAttribute("fill","#ffd23f");d.c.setAttribute("r",12);d.t.textContent="";snd(880,.08,"triangle")}
+ }else{ // orina baja por el uréter hacia la vejiga
+  const p=PATH[d.kx===KX[0]?0:1][d.i];
+  if(mv(d,p[0],p[1],130*dt)&&++d.i>=3){kill(d);S.urine++;S.score+=10;S.bl=Math.min(S.need,S.bl+1);setBladder();snd(330,.07,"sine",.08)}
+ }
+ if(!d.dead)pos(d)}
+
+function loop(t){
+ if(!S.run)return;
+ const dt=Math.min((t-last)/1000,.05);last=t;
+ if(!S.full){sp+=dt;if(sp>=Math.max(.7,1.5-.2*S.lvl)){sp=0;spawn()}}
+ drops.forEach(d=>step(d,dt));drops=drops.filter(d=>!d.dead);hud();
+ raf=requestAnimationFrame(loop)}
+
+function check(){if(S.purity<=0&&S.run){ // demasiada suciedad: se repite el nivel
+ S.run=false;cancelAnimationFrame(raf);toast("¡Se ensució la sangre! Probemos de nuevo el nivel 💪",2200);hud();setTimeout(startLevel,2300)}}
+
+function setBladder(){
+ const f=S.bl/S.need;$("#fillr").style.transform=`translateY(${110*(1-f)}px)`;$("#pct").textContent=Math.round(f*100)+"%";
+ if(S.bl>=S.need&&!S.full){S.full=true;$("#rel").disabled=false;$("#bladder").classList.add("pulse");
+  toast("¡Alerta: Vejiga llena! ¡Hora de ir al baño!",3500);snd(900,.15,"square",.08);snd(900,.15,"square",.08,.25)}}
+
+$("#rel").onclick=()=>{ // Uretra: vaciar la vejiga
+ if(!S.full)return;S.run=false;cancelAnimationFrame(raf);$("#rel").disabled=true;
+ $("#bladder").classList.remove("pulse");$("#flow").classList.add("on");
+ S.bl=0;setBladder();S.score+=50;hud();good();toast("¡Qué alivio! 🚽 La vejiga se vació por la uretra.",2000);
+ setTimeout(()=>{$("#flow").classList.remove("on");startQuiz()},2300)};
+
+/* ===================== FASE 3: TRIVIA ===================== */
+function startQuiz(){S.qi=0;show("s-quiz");renderQ()}
+function renderQ(){
+ const q=Q[(S.lvl-1)*3+S.qi];
+ $("#qh").textContent=`Trivia del nivel ${S.lvl} · pregunta ${S.qi+1} de 3`;$("#qq").textContent=q[0];
+ $("#fb").textContent="";$("#qn").style.display="none";$("#qo").innerHTML="";
+ q[1].forEach((o,i)=>{const b=document.createElement("button");b.className="btn opt";b.textContent="ABC"[i]+") "+o;
+  b.onclick=()=>answer(i,q);$("#qo").appendChild(b)})}
+function answer(i,q){
+ const bs=[...document.querySelectorAll(".opt")];bs.forEach(b=>b.disabled=true);
+ if(i===q[2]){bs[i].classList.add("ok");S.correct++;S.score+=20;good();$("#fb").textContent="🎉 ¡Correcto! "+q[3]}
+ else{bs[i].classList.add("no");bs[q[2]].classList.add("ok");bad();$("#fb").textContent="🤔 ¡Casi! "+q[3]}
+ hud();$("#qn").style.display="inline-block";$("#qn").textContent=S.qi<2?"Siguiente pregunta":(S.lvl<3?"¡Al próximo nivel!":"Ver resultados")}
+$("#qn").onclick=()=>{
+ if(S.qi<2){S.qi++;renderQ();return}
+ if(S.lvl<3){S.lvl++;show("s-game");startLevel()}else endGame()};
+
+/* ===================== FINAL E INSIGNIAS ===================== */
+function endGame(){
+ show("s-end");
+ $("#sum").innerHTML=`Puntos: <b>${S.score}</b> · Sangre limpia: <b>${S.clean}</b> 💧 · Orina procesada: <b>${S.urine}</b> 🟡 · Trivia: <b>${S.correct}/9</b>`;
+ const a=S.leaks<=3,b=S.mistakes===0,c=S.correct>=7;
+ const B=[["🧪","¡Maestro del Filtrado!","Dejaste escapar 3 desechos o menos",a],
+  ["💎","Sangre Cristalina","No confundiste ningún nutriente",b],
+  ["🧠","Cerebro Brillante","7 o más respuestas correctas",c],
+  ["🎈","Guardián de la Vejiga","Completaste los 3 niveles",true],
+  ["🌟","Científico Estrella","Conseguiste todas las otras insignias",a&&b&&c]];
+ $("#bd").innerHTML=B.map(x=>`<div class="badge ${x[3]?"":"lock"}"><b>${x[0]}</b>${x[1]}<br><small>${x[2]}</small></div>`).join("");
+ good()}
+$("#again").onclick=()=>{resetAll();hud();show("s-learn")};
+</script>
+</body>
+</html>
